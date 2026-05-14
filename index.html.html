@@ -777,33 +777,7 @@ async function genConcepts(){
   IDEA_QS.forEach(q=>{const el=document.getElementById('iq-'+q.id);if(el)S.ideaQs[q.id]=el.value;});
   const filled=IDEA_QS.filter(q=>(S.ideaQs[q.id]||'').trim()).length;
   if(filled<3)return showErr('Please answer at least 3 questions so we can generate relevant concepts.');
-  S.error=null;S.ideaLoading=true;// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+  S.error=null;S.ideaLoading=true;render();
 
   const answers=IDEA_QS.map(q=>S.ideaQs[q.id]?`${q.t}\nAnswer: ${S.ideaQs[q.id]}`:'').filter(Boolean).join('\n\n');
   const prompt=`Based on these discovery answers from a potential book author, generate exactly 3 distinct and compelling book concepts.\n\n${answers}\n\nReturn ONLY valid JSON (no markdown):\n{\n  "concepts": [\n    {"title":"Working title","premise":"2-3 sentence description of the book","genre":"Best genre","audience":"Target reader in 5-8 words"},\n    ...\n  ]\n}`;
@@ -812,33 +786,7 @@ initApp();
     const res=await apiCall(prompt,1500);
     const txt=res.replace(/```json\n?|```\n?/g,'').trim();
     const parsed=JSON.parse(txt);
-    S.concepts=parsed.concepts;S.ideaLoading=false;// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+    S.concepts=parsed.concepts;S.ideaLoading=false;render();
   }catch(e){S.ideaLoading=false;S.error='Could not generate concepts: '+e.message;render();}
 }
 
@@ -849,66 +797,14 @@ async function analyzeVoice(){
   const el=document.getElementById('voice-sample');
   const sample=(el?el.value:S.res.voiceSample).trim();
   if(sample.length<50)return showErr('Please paste at least 50 words of your writing for voice analysis.');
-  S.res.voiceSample=sample;S.res.voiceLoading=true;// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+  S.res.voiceSample=sample;S.res.voiceLoading=true;render();
 
   const prompt=`Analyze this writing sample and extract the author's natural voice profile.\n\nSAMPLE:\n"${sample}"\n\nReturn ONLY valid JSON (no markdown):\n{"Sentence Style":"e.g. Short and punchy / Long and flowing","Tone":"e.g. Warm and conversational / Direct and authoritative","Vocabulary":"e.g. Simple everyday language / Elevated literary / Technical","Rhythm":"e.g. Staccato, fast-paced / Slow, deliberate / Balanced","Personality":"e.g. Self-deprecating humor / Passionate and urgent / Calm and reflective","Signature Phrases":"Recurring words or patterns to replicate"}`;
 
   try{
     const txt=await apiCall(prompt,600);
     S.res.voiceProfile=JSON.parse(txt.replace(/```json\n?|```\n?/g,'').trim());
-    S.res.voiceLoading=false;// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+    S.res.voiceLoading=false;render();
   }catch(e){S.res.voiceLoading=false;S.error='Voice analysis failed: '+e.message;render();}
 }
 
@@ -928,65 +824,13 @@ async function genOutlines(){
 
 async function regenOutlines(){
   if(S.regenLoading)return;
-  S.regenLoading=true;S.olPicked=null;// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+  S.regenLoading=true;S.olPicked=null;render();
   const ctx=buildCtx();
   const chs=S.setup.length==='short'?'8-10':S.setup.length==='extended'?'14-18':'10-14';
   const prompt=`You are a world-class ghostwriter. Generate TWO completely fresh, structurally different book outlines (different from any previous versions) with ${chs} chapters each.\n\n${ctx}\n\nReturn ONLY valid JSON:\n{"oA":{"title":"…","approach":"…","chapters":[{"number":1,"title":"…","description":"…"}]},"oB":{"title":"…","approach":"…","chapters":[{"number":1,"title":"…","description":"…"}]}}`;
   try{
     const txt=(await apiCall(prompt,3000)).replace(/```json\n?|```\n?/g,'').trim();
-    S.outlines=JSON.parse(txt);S.regenLoading=false;// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+    S.outlines=JSON.parse(txt);S.regenLoading=false;render();
   }catch(e){S.regenLoading=false;S.error='Regeneration failed: '+e.message;render();}
 }
 
@@ -998,33 +842,7 @@ async function startDraft(){
   S.olFeedback=fb;
   let outline=S.outlines[S.olPicked==='a'?'oA':'oB'];
   if(fb.trim()){
-    S.loading=true;S.loadMsg='Applying your adjustments to the outline…';// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+    S.loading=true;S.loadMsg='Applying your adjustments to the outline…';render();
     try{
       const txt=(await apiCall(`Update this book outline based on the author's adjustments.\nOutline: ${JSON.stringify(outline)}\nAdjustments: "${fb}"\nReturn only the updated JSON object with the same structure.`,2000)).replace(/```json\n?|```\n?/g,'').trim();
       outline=JSON.parse(txt);
@@ -1040,33 +858,7 @@ initApp();
 async function writeCh(idx){
   const ch=S.chapters[idx];if(!ch)return;
   const prevFeedback=S.drafts[idx]?.feedback||'';
-  S.drafts[idx]={content:'',status:'writing',feedback:''};// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+  S.drafts[idx]={content:'',status:'writing',feedback:''};render();
 
   const ctx=buildCtx();
   const allChs=S.chapters.map((c,i)=>`${i+1}. ${c.title}`).join('\n');
@@ -1094,45 +886,11 @@ CRITICAL RULES:
 - Use specific details, real examples, and the author's perspective throughout`;
 
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window.ANTHROPIC_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:5000,stream:true,messages:[{role:'user',content:prompt}]})});
-    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error?.message||`API ${res.status}`);}
-    const reader=res.body.getReader(),decoder=new TextDecoder();
-    let text='';
-    while(true){
-      const{done,value}=await reader.read();if(done)break;
-      for(const line of decoder.decode(value).split('\n')){
-        if(!line.startsWith('data: '))continue;
-        const d=line.slice(6).trim();if(d==='[DONE]')continue;
-        try{const p=JSON.parse(d);if(p.type==='content_block_delta'&&p.delta?.type==='text_delta'){text+=p.delta.text;if(S.drafts[idx])S.drafts[idx].content=text;const el=document.getElementById('dc-'+idx);if(el)el.textContent=text;}}catch(e){}
-      }
-    }
-    if(S.drafts[idx])S.drafts[idx].status='done';// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+    if(S.drafts[idx])S.drafts[idx].content='Writing your chapter… this takes about 30 seconds.';
+    const el=document.getElementById('dc-'+idx);if(el)el.textContent='Writing your chapter… this takes about 30 seconds.';
+    const text=await apiCall(prompt,5000);
+    if(S.drafts[idx]){S.drafts[idx].content=text;S.drafts[idx].status='done';}
+    render();
   }catch(e){if(S.drafts[idx])S.drafts[idx].status='pending';S.error='Failed to write chapter: '+e.message;render();}
 }
 
@@ -1140,7 +898,7 @@ initApp();
 // GENERIC API CALL
 // ══════════════════════════════════════════════════════
 async function apiCall(prompt,maxTokens=1000){
-  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window.ANTHROPIC_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});
+  const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});
   if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error?.message||`API ${res.status}`);}
   const data=await res.json();
   return data.content.map(b=>b.type==='text'?b.text:'').join('');
@@ -1167,33 +925,7 @@ function pickConcept(i){
   S.pickedConcept=i;
   const c=S.concepts[i];
   S.setup.genre=c.genre;S.setup.title=c.title;
-  // Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
   render();
-}
-initApp();
 }
 function resetConcepts(){S.concepts=null;S.pickedConcept=null;render();}
 function next0Idea(){
@@ -1282,33 +1014,7 @@ function bind(){
 // ══════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════
-// Get API key from user on first load
-window.ANTHROPIC_KEY = '';
-function initApp(){
-  const key = localStorage.getItem('inkflow_key');
-  if(key){ window.ANTHROPIC_KEY = key; render(); }
-  else { showKeyPrompt(); }
-}
-function showKeyPrompt(){
-  document.getElementById('view').innerHTML = `
-  <div style="max-width:460px;margin:80px auto;text-align:center">
-    <div style="font-size:40px;margin-bottom:20px">🔑</div>
-    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
-    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
-    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
-    <br>
-    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
-    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
-  </div>`;
-}
-function saveKey(){
-  const k = document.getElementById('key-input').value.trim();
-  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
-  window.ANTHROPIC_KEY = k;
-  localStorage.setItem('inkflow_key', k);
-  render();
-}
-initApp();
+render();
 </script>
 </body>
 </html>
