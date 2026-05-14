@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InkFlow — AI Ghostwriting Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;1,400&display=swap');
+
+:root {
+  --brand:      #008672;
+  --brand-lt:   #00A88A;
+  --brand-dim:  #00503F;
+  --brand-bg:   rgba(0,134,114,0.09);
+  --cta:        #FF3E0E;
+  --cta-hover:  #FF6B40;
+  --evergreen:  #004A3F;
+  --parchment:  #F2D9BB;
+  --bg:         #081210;
+  --bg-card:    #0F1F1C;
+  --bg-input:   #152420;
+  --bg-hover:   #1B2E2A;
+  --border:     #1C3530;
+  --border-lt:  #264540;
+  --text:       #E8F5F1;
+  --text-muted: #78A89E;
+  --text-dim:   #3C6860;
+  --sw:         240px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Lora',Georgia,serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;overflow:hidden}
+
+/* ═══ SIDEBAR ═══ */
+#sb{width:var(--sw);background:var(--bg-card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:26px 18px;position:fixed;left:0;top:0;bottom:0;z-index:100}
+.logo{margin-bottom:32px}
+.logo h1{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;letter-spacing:.01em}
+.logo h1 .t{color:var(--brand)}.logo h1 .o{color:var(--cta)}
+.logo-sub{font-size:9px;color:var(--text-dim);margin-top:3px;letter-spacing:.12em;text-transform:uppercase}
+
+.step-list{flex:1;display:flex;flex-direction:column;gap:1px}
+.si{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;position:relative}
+.si.cp{cursor:pointer}.si.cp:hover{background:var(--bg-hover)}
+.si.ac{background:var(--bg-hover)}.si.lk{opacity:.3}
+.sn{width:23px;height:23px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;border:1.5px solid var(--border-lt);color:var(--text-dim);flex-shrink:0;transition:all .2s}
+.si.dn .sn{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
+.si.ac .sn{border-color:var(--cta);color:var(--cta);background:rgba(255,62,14,.1)}
+.sl{font-size:11px;color:var(--text-muted)}.si.ac .sl{color:var(--text)}
+.sline{position:absolute;left:20px;top:31px;width:1px;height:13px;background:var(--border)}
+
+/* Book Progress Box */
+.bpb{background:var(--bg-input);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:14px}
+.bpb-lbl{font-size:9px;color:var(--text-dim);letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px}
+.bpb-count{font-size:12px;color:var(--text-muted);margin-bottom:7px}.bpb-count strong{color:var(--brand)}
+.bpb-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.bpb-fill{height:100%;background:linear-gradient(90deg,var(--brand-dim),var(--brand));border-radius:2px;transition:width .4s}
+
+.sb-foot{padding-top:14px;border-top:1px solid var(--border);font-size:9px;color:var(--text-dim);text-align:center;letter-spacing:.04em}
+.sb-foot span{color:var(--brand)}
+
+/* ═══ MAIN ═══ */
+#main{margin-left:var(--sw);flex:1;overflow-y:auto;height:100vh}
+.content{max-width:740px;margin:0 auto;padding:48px 42px}
+.progbar{height:2px;background:var(--border);border-radius:1px;margin-bottom:40px;overflow:hidden}
+.progfill{height:100%;background:linear-gradient(90deg,var(--brand-dim),var(--brand));transition:width .4s}
+
+/* ═══ TYPE ═══ */
+.ey{font-size:9px;color:var(--brand);letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px}
+.sh{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;line-height:1.15;margin-bottom:8px}
+.ss{font-size:14px;color:var(--text-muted);line-height:1.65;max-width:520px;margin-bottom:32px}
+
+/* ═══ FORMS ═══ */
+.fg{margin-bottom:20px}
+.lb{display:block;font-size:10px;font-weight:500;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.lb .req{color:var(--cta);margin-left:2px}.lb .opt{color:var(--text-dim);font-size:10px;text-transform:none;margin-left:5px}
+input[type=text],input[type=url],textarea,select{width:100%;background:var(--bg-input);border:1px solid var(--border);border-radius:7px;padding:11px 13px;font-family:'Lora',serif;font-size:14px;color:var(--text);transition:border-color .2s;outline:none;appearance:none}
+input:focus,textarea:focus,select:focus{border-color:var(--brand-dim)}
+input::placeholder,textarea::placeholder{color:var(--text-dim)}
+textarea{resize:vertical;min-height:80px;line-height:1.65}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2378A89E' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+select option{background:var(--bg-card);color:var(--text)}
+.hint{font-size:11px;color:var(--text-dim);margin-top:4px;font-style:italic}
+.char-ct{font-size:9px;color:var(--text-dim);text-align:right;margin-top:2px}
+
+/* Grid selectors */
+.ggrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.lgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gbtn{padding:9px 8px;border:1px solid var(--border);border-radius:7px;background:var(--bg-input);color:var(--text-muted);font-family:'Lora',serif;font-size:11px;cursor:pointer;transition:all .15s;text-align:center}
+.gbtn:hover{border-color:var(--border-lt);color:var(--text)}.gbtn.sel{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
+.lbtn{padding:12px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-muted);font-family:'Lora',serif;font-size:12px;cursor:pointer;transition:all .15s;text-align:center;line-height:1.4}
+.lbtn:hover{border-color:var(--border-lt);color:var(--text)}.lbtn.sel{border-color:var(--brand);color:var(--brand);background:var(--brand-bg)}
+.lbtn strong{display:block;font-size:13px;margin-bottom:2px}.lbtn small{font-size:10px;color:var(--text-dim)}
+.lbtn.sel small{color:var(--brand-dim) !important}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;border-radius:7px;font-family:'Lora',serif;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .2s;letter-spacing:.02em}
+.btn-cta{background:var(--cta);color:#fff}.btn-cta:hover{background:var(--cta-hover)}.btn-cta:disabled{opacity:.35;cursor:not-allowed}
+.btn-brand{background:var(--brand);color:#fff}.btn-brand:hover{background:var(--brand-lt)}
+.btn-outline{background:transparent;border:1px solid var(--border-lt);color:var(--text-muted)}.btn-outline:hover{border-color:var(--text-muted);color:var(--text)}
+.btn-ghost{background:transparent;color:var(--text-muted);padding:8px 13px;font-size:12px}.btn-ghost:hover{color:var(--text)}
+.btn-sm{padding:7px 13px;font-size:12px}
+.acts{display:flex;gap:8px;margin-top:28px;padding-top:22px;border-top:1px solid var(--border);flex-wrap:wrap}
+hr.dv{border:none;border-top:1px solid var(--border);margin:22px 0}
+
+/* ═══ IDEA STARTER ═══ */
+.mode-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:26px}
+.mcard{border:2px solid var(--border);border-radius:10px;padding:18px 14px;cursor:pointer;transition:all .2s;text-align:center;background:var(--bg-input)}
+.mcard:hover{border-color:var(--border-lt)}.mcard.sel{border-color:var(--brand);background:var(--brand-bg)}
+.mcard-ico{font-size:22px;margin-bottom:7px}.mcard-title{font-family:'Playfair Display',serif;font-size:14px;margin-bottom:3px}
+.mcard-desc{font-size:11px;color:var(--text-muted);line-height:1.45}
+
+.iq-box{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:18px;margin-bottom:10px}
+.iq-n{font-size:9px;color:var(--brand);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.iq-t{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);margin-bottom:9px}
+
+.concept-list{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.ccard{border:2px solid var(--border);border-radius:9px;padding:16px;cursor:pointer;transition:all .2s;background:var(--bg-input)}
+.ccard:hover{border-color:var(--brand-dim)}.ccard.sel{border-color:var(--brand);background:var(--brand-bg)}
+.cc-title{font-family:'Playfair Display',serif;font-size:16px;color:var(--text);margin-bottom:3px}
+.cc-premise{font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:7px}
+.cc-tags{display:flex;gap:6px;flex-wrap:wrap}
+.cc-tag{font-size:9px;padding:2px 7px;border-radius:4px;background:var(--bg-card);border:1px solid var(--border);color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+.cc-sel{float:right;background:var(--brand);color:#fff;font-size:9px;padding:2px 8px;border-radius:4px}
+
+/* ═══ RESOURCES ═══ */
+.link-row{display:flex;gap:7px;margin-bottom:8px}
+.link-row select{width:138px;flex-shrink:0}
+.addbtn{background:var(--bg-input);border:1px solid var(--border);border-radius:7px;padding:0 13px;color:var(--brand);font-size:19px;cursor:pointer;flex-shrink:0;transition:all .15s;line-height:1}
+.addbtn:hover{border-color:var(--brand-dim);background:var(--brand-bg)}
+.llist{display:flex;flex-direction:column;gap:5px;margin-bottom:8px}
+.litem{display:flex;align-items:center;gap:7px;background:var(--bg-input);border:1px solid var(--border);border-radius:7px;padding:7px 10px}
+.lico{font-size:12px;flex-shrink:0;width:16px;text-align:center}
+.lurl{flex:1;font-size:11px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ltag{font-size:9px;color:var(--text-dim);background:var(--bg-card);padding:2px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.04em;flex-shrink:0}
+.rmbtn{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:14px;padding:0 2px;transition:color .15s}
+.rmbtn:hover{color:#e05050}
+
+/* Voice Analyzer */
+.va{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:18px}
+.va-title{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);margin-bottom:3px}
+.va-sub{font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.45}
+.vp{background:var(--brand-bg);border:1px solid var(--brand-dim);border-radius:8px;padding:13px 15px;margin-top:10px}
+.vp-lbl{font-size:9px;color:var(--brand);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
+.vp-row{display:flex;gap:10px;align-items:flex-start;font-size:12px;margin-bottom:5px}
+.vp-k{color:var(--text-muted);width:105px;flex-shrink:0;font-style:italic}
+.vp-v{color:var(--text);line-height:1.45}
+
+/* Upload */
+.upz{border:2px dashed var(--border-lt);border-radius:9px;padding:22px;text-align:center;cursor:pointer;transition:all .2s}
+.upz:hover,.upz.drag{border-color:var(--brand-dim);background:var(--brand-bg)}
+.up-ico{font-size:24px;margin-bottom:7px}.up-txt{font-size:13px;color:var(--text-muted);margin-bottom:2px}.up-hint{font-size:10px;color:var(--text-dim)}
+.flist{display:flex;flex-direction:column;gap:5px;margin-top:7px}
+.fitem{display:flex;align-items:center;gap:7px;background:var(--bg-input);border:1px solid var(--border);border-radius:7px;padding:7px 10px}
+.fn{flex:1;font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fsz{font-size:9px;color:var(--text-dim)}
+
+/* ═══ VISION ═══ */
+.qbadge{display:inline-flex;align-items:center;gap:7px;background:var(--brand-bg);border:1px solid var(--brand-dim);border-radius:6px;padding:8px 12px;margin-bottom:20px;font-size:11px;color:var(--brand)}
+.qcard{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:18px;margin-bottom:10px}
+.qn{font-size:9px;color:var(--brand);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.qt{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);margin-bottom:9px;line-height:1.4}
+
+/* ═══ OUTLINE ═══ */
+.ol-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.olcard{background:var(--bg-card);border:2px solid var(--border);border-radius:10px;padding:18px;cursor:pointer;transition:all .2s;position:relative}
+.olcard:hover{border-color:var(--brand-dim)}.olcard.sel{border-color:var(--brand);background:var(--brand-bg)}
+.sel-b{position:absolute;top:10px;right:10px;background:var(--brand);color:#fff;font-size:9px;padding:2px 7px;border-radius:20px;font-weight:600;letter-spacing:.04em}
+.ol-opt{font-size:9px;color:var(--brand);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.ol-t{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);margin-bottom:4px;line-height:1.3}
+.ol-a{font-size:11px;color:var(--text-muted);line-height:1.5;margin-bottom:11px;font-style:italic}
+.ol-chs{display:flex;flex-direction:column;gap:4px}
+.ol-ch{display:flex;gap:6px;align-items:flex-start;font-size:11px}
+.ol-cn{color:var(--text-dim);flex-shrink:0;width:14px;font-size:9px;padding-top:1px}
+.ol-ct{color:var(--text-muted);line-height:1.4}
+
+.sbox{background:rgba(0,134,114,.1);border:1px solid var(--brand-dim);border-radius:8px;padding:11px 15px;margin-bottom:18px;font-size:12px;color:#00C8A8}
+.errbox{background:rgba(160,80,80,.1);border:1px solid rgba(160,80,80,.3);border-radius:7px;padding:10px 14px;font-size:12px;color:#e08080;margin-bottom:14px}
+
+/* ═══ DRAFT STUDIO ═══ */
+.dbar{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.dstat{font-size:12px;color:var(--text-muted)}.dstat strong{color:var(--brand)}
+.dprog{flex:1;min-width:100px;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.dprog-fill{height:100%;background:linear-gradient(90deg,var(--brand-dim),var(--brand));transition:width .4s}
+.dpct{font-size:11px;color:var(--brand);font-weight:500}
+
+.dlayout{display:flex;gap:18px}
+.chsb{width:185px;flex-shrink:0}.chsb-t{font-size:9px;color:var(--text-dim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
+.chi{display:flex;align-items:flex-start;gap:7px;padding:7px 8px;border-radius:6px;cursor:pointer;transition:all .15s;margin-bottom:2px}
+.chi:hover{background:var(--bg-card)}.chi.act{background:var(--bg-hover)}
+.chd{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--border-lt);margin-top:4px}
+.chd.wrt{background:var(--cta);animation:pulse 1.4s infinite}
+.chd.dn{background:rgba(0,134,114,.45)}.chd.apv{background:var(--brand)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.chl{font-size:11px;color:var(--text-muted);line-height:1.35}.chi.act .chl{color:var(--text)}
+
+.dmain{flex:1;min-width:0}
+.dch-n{font-size:9px;color:var(--brand);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px}
+.dch-t{font-family:'Playfair Display',serif;font-size:20px;color:var(--text);margin-bottom:3px}
+.dch-d{font-size:11px;color:var(--text-muted);font-style:italic;margin-bottom:12px}
+
+.dbox{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:24px;font-size:14px;line-height:1.85;color:var(--text);min-height:320px;white-space:pre-wrap;font-family:'Lora',serif;transition:border-color .2s}
+.dbox.empty{display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-style:italic;font-size:13px}
+.dbox.wrt{border-color:var(--brand-dim)}
+.dacts{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:10px;letter-spacing:.03em}
+.bw{background:rgba(255,62,14,.1);color:#FF7A50}.ba{background:rgba(0,134,114,.12);color:var(--brand)}
+
+/* ═══ INLINE LOAD ═══ */
+.iload{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text-muted);padding:10px 0}
+.dots{display:flex;gap:4px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--brand);animation:blink 1.4s infinite ease-in-out}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{transform:scale(.5);opacity:.35}40%{transform:scale(1);opacity:1}}
+
+/* ═══ FULL LOAD ═══ */
+.ldstate{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px}
+.ld-ico{font-size:38px;animation:flt 2s ease-in-out infinite}
+@keyframes flt{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.ld-t{font-family:'Playfair Display',serif;font-size:20px;text-align:center}
+.ld-s{font-size:12px;color:var(--text-muted);text-align:center}
+
+/* ═══ COMPLETE ═══ */
+.cplt{text-align:center;padding:52px 0}
+.cplt-ico{font-size:54px;margin-bottom:16px;animation:flt 3s ease-in-out infinite}
+.cplt-t{font-family:'Playfair Display',serif;font-size:30px;margin-bottom:7px}
+.cplt-s{font-size:14px;color:var(--text-muted);max-width:400px;margin:0 auto 24px;line-height:1.65}
+.cplt-acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-lt);border-radius:2px}
+@media(max-width:680px){.ol-grid{grid-template-columns:1fr}.dlayout{flex-direction:column}.chsb{width:100%}}
+</style>
+</head>
+<body>
+
+<div id="sb">
+  <div class="logo">
+    <h1>Ink<span class="t">Flow</span></h1>
+    <div class="logo-sub">by selfpublishing<span style="color:var(--brand)">.</span>com</div>
+  </div>
+  <div class="step-list" id="sl"></div>
+  <div id="bpb-area"></div>
+  <div class="sb-foot">AI Beta for Ghostwriters<br><span>selfpublishing.com</span></div>
+</div>
+
+<div id="main">
+  <div class="content">
+    <div class="progbar"><div class="progfill" id="pf"></div></div>
+    <div id="view"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════
+const STEPS = ['Book Setup','Resources Hub','Vision Intake','Choose Outline','Draft Studio'];
+const GENRES = ['Self-Help','Memoir','Business','Spirituality','Fiction','Personal Development','Leadership','Health & Wellness','Finance','Relationships','Biography','Other'];
+const LINK_TYPES = [
+  {v:'youtube',l:'YouTube',i:'▶'},{v:'podcast',l:'Podcast',i:'🎙'},
+  {v:'instagram',l:'Instagram',i:'📸'},{v:'twitter',l:'Twitter/X',i:'𝕏'},
+  {v:'linkedin',l:'LinkedIn',i:'in'},{v:'tiktok',l:'TikTok',i:'🎵'},
+  {v:'website',l:'Website',i:'🌐'},{v:'other',l:'Other',i:'🔗'},
+];
+const IDEA_QS = [
+  {id:'expert',t:"What do you do, or what's your area of expertise / life experience?",p:"Your profession, skills, passions, or what you've lived through…"},
+  {id:'problem',t:'What problem or struggle do you most want to help people overcome?',p:"The pain, frustration, or challenge you're drawn to fix for others…"},
+  {id:'story',t:"What's a turning-point story from your own life that changed everything?",p:"A moment, failure, breakthrough, or experience that shaped who you are today…"},
+  {id:'reader',t:'If your book could help one specific type of person, who would they be?',p:"Paint a picture of them — their situation, age, mindset, what keeps them up at night…"},
+  {id:'legacy',t:'If your book did one thing for the world, what would that be?',p:"The change, movement, or shift you'd love your book to spark…"},
+];
+const GQ = {
+  selfhelp:[
+    {id:'problem',t:'What core problem does your book solve?',p:"The specific struggle, pain point, or challenge you address…"},
+    {id:'audience',t:'Who is your ideal reader?',p:"What are they struggling with right now? What do they want most?"},
+    {id:'framework',t:'What is your unique approach, framework, or method?',p:"What do you teach that others don't? What's your signature system?"},
+    {id:'transformation',t:'What transformation will readers experience?',p:"Before and after — how will their life be different after reading?"},
+    {id:'story',t:'What personal story establishes your credibility?',p:"Your lived experience, breakthrough, or the moment that shaped your expertise…"},
+    {id:'tone',t:'What tone and style do you want?',p:"Warm and encouraging, direct and challenging, scientific, storytelling-heavy…"},
+    {id:'comps',t:'Comparable books you admire?',p:"e.g. Atomic Habits, The Body Keeps the Score, You Are a Badass…"},
+    {id:'mustInclude',t:'Specific stories, exercises, or chapters you must include?',p:"Signature exercises, real client stories, must-have concepts…"},
+  ],
+  memoir:[
+    {id:'story',t:'What is the central story or experience your memoir explores?',p:"The pivotal event, journey, or period of life at the heart of your book…"},
+    {id:'audience',t:'Who will see themselves in your story?',p:"Who needs to hear this? Who will feel less alone because of it?"},
+    {id:'arc',t:'What is the emotional arc — where do you begin vs. end up?',p:"How you changed, what you lost, what you gained, the transformation you lived…"},
+    {id:'theme',t:'What universal truth does your story reveal?',p:"What will readers take away beyond just your personal experience?"},
+    {id:'timeframe',t:'What time period or chapter of life does it cover?',p:"Childhood, a decade, a single transformative year, a relationship…"},
+    {id:'tone',t:'What tone and voice do you want?',p:"Raw and honest, reflective, humorous, hopeful, vulnerable…"},
+    {id:'comps',t:'Comparable memoirs you admire?',p:"e.g. Educated, The Glass Castle, When Breath Becomes Air, Shoe Dog…"},
+    {id:'sensitive',t:'Are there sensitive areas or people to handle carefully?',p:"Family members, legal considerations, things still being processed…"},
+  ],
+  business:[
+    {id:'problem',t:'What business problem or opportunity does your book address?',p:"The pain point, gap, or market opportunity your expertise solves…"},
+    {id:'audience',t:'Who is your target reader?',p:"Entrepreneurs, executives, managers, founders, freelancers…"},
+    {id:'framework',t:'What is your unique methodology, framework, or system?',p:"The proprietary approach or philosophy you teach that others don't…"},
+    {id:'results',t:'What results will readers achieve?',p:"Concrete outcomes — revenue, efficiency, growth, leadership, freedom…"},
+    {id:'credentials',t:'What are your credentials or track record?',p:"Companies built, clients helped, revenue generated, years of experience…"},
+    {id:'tone',t:'What tone do you want?',p:"Practical and actionable, visionary and inspiring, case-study driven…"},
+    {id:'comps',t:'Comparable business books?',p:"e.g. Zero to One, Good to Great, $100M Offers, The E-Myth…"},
+    {id:'mustInclude',t:'Key stories, case studies, or frameworks to include?',p:"Your signature examples, client wins, pivotal business moments…"},
+  ],
+  fiction:[
+    {id:'premise',t:"What is your story's core premise or hook?",p:'The "what if" — what makes this story unique and irresistible?'},
+    {id:'protagonist',t:'Who is your protagonist and what do they desperately want?',p:"Their name, goal, flaw, and what stands in their way…"},
+    {id:'conflict',t:'What is the central conflict?',p:"Internal, external, or both — the force driving the plot forward…"},
+    {id:'setting',t:'What is the setting?',p:"Time period, location, world-building details, atmosphere…"},
+    {id:'themes',t:'What themes do you want to explore?',p:"Love, identity, redemption, power, loss, revenge, belonging…"},
+    {id:'tone',t:'What tone and style?',p:"Dark and gritty, light and witty, lyrical, fast-paced thriller…"},
+    {id:'comps',t:'Comparable novels you admire?',p:"e.g. The Nightingale, Gone Girl, Dune, The Alchemist, Colleen Hoover…"},
+    {id:'existing',t:'Any characters, scenes, or world-building already developed?',p:"Names, relationships, lore, or scenes you've already imagined or written…"},
+  ],
+  spirituality:[
+    {id:'message',t:'What is the core spiritual message or teaching at the heart of your book?',p:"The truth, insight, or wisdom you feel called to share…"},
+    {id:'audience',t:'Who is spiritually seeking what you offer?',p:"Who is your reader — what are they searching for?"},
+    {id:'journey',t:'What is your own spiritual journey or path?',p:"The awakenings, practices, teachers, or experiences that shaped you…"},
+    {id:'transformation',t:'What shift will readers experience?',p:"The inner change, expanded perspective, or awakening you want to catalyze…"},
+    {id:'tradition',t:'What tradition, practice, or philosophy does it draw from?',p:"Buddhism, Christianity, New Age, secular mindfulness, indigenous wisdom…"},
+    {id:'tone',t:'What tone and style?',p:"Contemplative, prophetic, practical and grounded, poetic, storytelling…"},
+    {id:'comps',t:'Comparable books?',p:"e.g. The Power of Now, A Course in Miracles, The Alchemist, Untethered Soul…"},
+    {id:'mustInclude',t:'Specific teachings, practices, or stories to include?',p:"Guided exercises, parables, meditations, prayers, personal revelations…"},
+  ],
+};
+GQ.personal = GQ.selfhelp;
+GQ.leadership = GQ.business;
+GQ.finance = GQ.business;
+GQ.health = GQ.selfhelp;
+GQ.relationships = GQ.selfhelp;
+GQ.biography = GQ.memoir;
+GQ.default = GQ.selfhelp;
+
+function getQs(genre) {
+  const g = (genre||'').toLowerCase();
+  if (['memoir','biography','autobiography'].some(x=>g.includes(x))) return GQ.memoir;
+  if (['business','leadership','finance','entrepreneurship'].some(x=>g.includes(x))) return GQ.business;
+  if (g.includes('fiction')) return GQ.fiction;
+  if (['spirituality','spiritual','mindfulness'].some(x=>g.includes(x))) return GQ.spirituality;
+  return GQ.selfhelp;
+}
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let S = {
+  mode:'direct',           // 'direct'|'idea'
+  ideaQs:{expert:'',problem:'',story:'',reader:'',legacy:''},
+  ideaLoading:false,
+  concepts:null,
+  pickedConcept:null,
+  step:0,
+  loading:false,
+  loadMsg:'',
+  error:null,
+  setup:{genre:'',title:'',length:'',goal:''},
+  res:{links:[],files:[],textPaste:'',voiceSample:'',voiceProfile:null,voiceLoading:false},
+  vision:{},
+  outlines:null,
+  olPicked:null,
+  olFeedback:'',
+  regenLoading:false,
+  chapters:[],
+  curCh:0,
+  drafts:{},
+  done:false,
+};
+
+// ══════════════════════════════════════════════════════
+// RENDER ENGINE
+// ══════════════════════════════════════════════════════
+function render(){
+  renderSB();
+  document.getElementById('pf').style.width=(S.step/4*100)+'%';
+  const v=document.getElementById('view');
+  const err=S.error?`<div class="errbox">⚠ ${esc(S.error)}</div>`:'';
+  if(S.loading){v.innerHTML=rLoad();return}
+  switch(S.step){
+    case 0:v.innerHTML=err+rSetup();break;
+    case 1:v.innerHTML=err+rRes();break;
+    case 2:v.innerHTML=err+rVision();break;
+    case 3:v.innerHTML=err+rOutline();break;
+    case 4:v.innerHTML=err+rDraft();break;
+  }
+  bind();
+}
+
+function renderSB(){
+  document.getElementById('sl').innerHTML=STEPS.map((l,i)=>{
+    const dn=i<S.step,ac=i===S.step,lk=i>S.step;
+    let c='si';
+    if(dn)c+=' dn cp';if(ac)c+=' ac';if(lk)c+=' lk';
+    const ln=i<STEPS.length-1?'<div class="sline"></div>':'';
+    return `<div class="${c}"${dn?` onclick="goStep(${i})"`:''}>${ln}
+      <div class="sn">${dn?'✓':i+1}</div>
+      <div class="sl">${l}</div></div>`;
+  }).join('');
+
+  const bpb=document.getElementById('bpb-area');
+  if(S.step===4&&S.chapters.length){
+    const total=S.chapters.length;
+    const approved=Object.values(S.drafts).filter(d=>d.status==='approved').length;
+    const pct=Math.round(approved/total*100);
+    bpb.innerHTML=`<div class="bpb" style="margin-top:16px">
+      <div class="bpb-lbl">Book Progress</div>
+      <div class="bpb-count"><strong>${approved}</strong> of ${total} chapters approved</div>
+      <div class="bpb-bar"><div class="bpb-fill" style="width:${pct}%"></div></div>
+    </div>`;
+  }else{bpb.innerHTML='';}
+}
+
+function goStep(i){if(i<S.step){S.step=i;S.error=null;if(i<3){S.outlines=null;S.olPicked=null;}render();scrollT();}}
+
+// ══════════════════════════════════════════════════════
+// STEP 0 — BOOK SETUP
+// ══════════════════════════════════════════════════════
+function rSetup(){
+  const isIdea=S.mode==='idea';
+  return `
+  <div class="ey">Step 1 of 5</div>
+  <h2 class="sh">Book Setup</h2>
+  <p class="ss">Tell us about your book. If you don't have an idea yet, let us help you discover one.</p>
+
+  <div class="fg">
+    <label class="lb">How would you like to start?</label>
+    <div class="mode-row">
+      <div class="mcard${S.mode==='direct'?' sel':''}" onclick="setMode('direct')">
+        <div class="mcard-ico">💡</div>
+        <div class="mcard-title">I have an idea</div>
+        <div class="mcard-desc">I know what I want to write — let's build it out</div>
+      </div>
+      <div class="mcard${S.mode==='idea'?' sel':''}" onclick="setMode('idea')">
+        <div class="mcard-ico">🔍</div>
+        <div class="mcard-title">Help me find my idea</div>
+        <div class="mcard-desc">I'm not sure yet — guide me to the right book concept</div>
+      </div>
+    </div>
+  </div>
+
+  ${isIdea ? rIdeaStarter() : rDirectSetup()}`;
+}
+
+function rDirectSetup(){
+  return `
+  <div class="fg">
+    <label class="lb">Book Genre <span class="req">*</span></label>
+    <div class="ggrid">${GENRES.map(g=>`<button class="gbtn${S.setup.genre===g?' sel':''}" data-g="${g}">${g}</button>`).join('')}</div>
+  </div>
+  <div class="fg">
+    <label class="lb">Working Title <span class="opt">(optional)</span></label>
+    <input type="text" id="f-title" placeholder="e.g. From Chaos to Clarity" value="${esc(S.setup.title)}">
+  </div>
+  <div class="fg">
+    <label class="lb">Target Length <span class="req">*</span></label>
+    <div class="lgrid">
+      <button class="lbtn${S.setup.length==='short'?' sel':''}" data-l="short"><strong>Short Read</strong>~20,000–30,000 words<small>~3–4 hrs to read</small></button>
+      <button class="lbtn${S.setup.length==='standard'?' sel':''}" data-l="standard"><strong>Standard</strong>~50,000–60,000 words<small>~5–6 hrs to read</small></button>
+      <button class="lbtn${S.setup.length==='extended'?' sel':''}" data-l="extended"><strong>Extended</strong>~80,000–90,000 words<small>~8–10 hrs to read</small></button>
+    </div>
+  </div>
+  <div class="fg">
+    <label class="lb">Primary Goal for This Book</label>
+    <textarea id="f-goal" placeholder="e.g. Share my story, build authority, help others who've been through the same, leave a legacy…">${esc(S.setup.goal)}</textarea>
+  </div>
+  <div class="acts">
+    <button class="btn btn-cta" onclick="next0()">Continue to Resources Hub →</button>
+  </div>`;
+}
+
+function rIdeaStarter(){
+  if(S.ideaLoading) return `<div class="iload"><span>✨ Generating your book concepts…</span><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  if(S.concepts) return rConceptPicker();
+  return `
+  <div style="background:var(--brand-bg);border:1px solid var(--brand-dim);border-radius:8px;padding:12px 15px;margin-bottom:20px;font-size:12px;color:var(--brand)">
+    ✦ &nbsp;Answer these 5 questions and AI will generate 3 tailored book concept options for you.
+  </div>
+  ${IDEA_QS.map((q,i)=>`
+  <div class="iq-box">
+    <div class="iq-n">Question ${i+1}</div>
+    <div class="iq-t">${q.t}</div>
+    <textarea id="iq-${q.id}" placeholder="${q.p}" style="min-height:70px">${esc(S.ideaQs[q.id]||'')}</textarea>
+  </div>`).join('')}
+  <div class="acts">
+    <button class="btn btn-cta" onclick="genConcepts()">✨ Generate My Book Concepts →</button>
+  </div>`;
+}
+
+function rConceptPicker(){
+  return `
+  <div style="margin-bottom:16px">
+    <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:6px">Your book concepts are ready.</div>
+    <div style="font-size:13px;color:var(--text-muted)">Pick the one that resonates most — we'll build on it from here.</div>
+  </div>
+  <div class="concept-list">
+    ${S.concepts.map((c,i)=>`
+    <div class="ccard${S.pickedConcept===i?' sel':''}" onclick="pickConcept(${i})">
+      ${S.pickedConcept===i?'<span class="cc-sel">✓ Selected</span>':''}
+      <div class="cc-title">${esc(c.title)}</div>
+      <div class="cc-premise">${esc(c.premise)}</div>
+      <div class="cc-tags">
+        <span class="cc-tag">${esc(c.genre)}</span>
+        <span class="cc-tag">${esc(c.audience)}</span>
+      </div>
+    </div>`).join('')}
+  </div>
+  <div style="margin-bottom:16px">
+    <button class="btn btn-ghost" onclick="resetConcepts()">↺ Generate different concepts</button>
+  </div>
+  ${S.pickedConcept!==null?`
+  <div class="fg">
+    <label class="lb">Target Length <span class="req">*</span></label>
+    <div class="lgrid">
+      <button class="lbtn${S.setup.length==='short'?' sel':''}" data-l="short"><strong>Short Read</strong>~20,000–30,000 words<small>~3–4 hrs to read</small></button>
+      <button class="lbtn${S.setup.length==='standard'?' sel':''}" data-l="standard"><strong>Standard</strong>~50,000–60,000 words<small>~5–6 hrs to read</small></button>
+      <button class="lbtn${S.setup.length==='extended'?' sel':''}" data-l="extended"><strong>Extended</strong>~80,000–90,000 words<small>~8–10 hrs to read</small></button>
+    </div>
+  </div>
+  <div class="acts">
+    <button class="btn btn-cta" onclick="next0Idea()">Continue with This Concept →</button>
+  </div>`:''}`;}
+
+// ══════════════════════════════════════════════════════
+// STEP 1 — RESOURCES HUB
+// ══════════════════════════════════════════════════════
+function rRes(){
+  const hasRes=S.res.links.length>0||S.res.files.length>0||S.res.textPaste.trim()||S.res.voiceProfile;
+  const vp=S.res.voiceProfile;
+  return `
+  <div class="ey">Step 2 of 5</div>
+  <h2 class="sh">Resources Hub</h2>
+  <p class="ss">Share content that reflects your voice and expertise. Add links, upload documents, paste transcripts, or let AI analyze your writing style. All of this is optional.</p>
+
+  <div class="fg">
+    <label class="lb">Content Links</label>
+    <div class="link-row">
+      <select id="ltype">${LINK_TYPES.map(t=>`<option value="${t.v}">${t.i} ${t.l}</option>`).join('')}</select>
+      <input type="url" id="lurl" placeholder="https://…">
+      <button class="addbtn" onclick="addLink()">+</button>
+    </div>
+    <div class="hint">YouTube videos, podcast episodes, social media posts — anything that shows your voice.</div>
+  </div>
+  ${S.res.links.length?`<div class="llist">${S.res.links.map((l,i)=>{const t=LINK_TYPES.find(x=>x.v===l.type)||LINK_TYPES[7];return`<div class="litem"><span class="lico">${t.i}</span><span class="lurl">${esc(l.url)}</span><span class="ltag">${t.l}</span><button class="rmbtn" onclick="rmLink(${i})">×</button></div>`;}).join('')}</div>`:''}
+
+  <hr class="dv">
+
+  <div class="fg">
+    <label class="lb">Upload Documents</label>
+    <div class="upz" id="dz" onclick="document.getElementById('fup').click()">
+      <div class="up-ico">📁</div>
+      <div class="up-txt">Click to upload or drag & drop</div>
+      <div class="up-hint">PDF, Word (.docx), or .txt — previous books, transcripts, articles</div>
+    </div>
+    <input type="file" id="fup" multiple accept=".pdf,.doc,.docx,.txt" style="display:none">
+    <div class="flist">${S.res.files.map((f,i)=>`<div class="fitem"><span>📄</span><span class="fn">${esc(f.name)}</span><span class="fsz">${fmtSz(f.size)}</span><button class="rmbtn" onclick="rmFile(${i})">×</button></div>`).join('')}</div>
+  </div>
+
+  <div class="fg">
+    <label class="lb">Paste Text Materials <span class="opt">(transcripts, posts, notes)</span></label>
+    <textarea id="text-paste" placeholder="Paste podcast transcripts, blog posts, social media captions, speech notes, or any written content here…" style="min-height:110px">${esc(S.res.textPaste)}</textarea>
+  </div>
+
+  <hr class="dv">
+
+  <div class="va">
+    <div class="va-title">✦ Author Voice Analyzer</div>
+    <div class="va-sub">Paste a writing sample (100+ words) and AI will analyze your natural style — then write every chapter in that exact voice.</div>
+    <div class="fg" style="margin-bottom:10px">
+      <textarea id="voice-sample" placeholder="Paste anything you've written — an email, social post, article, journal entry, speech…" style="min-height:100px">${esc(S.res.voiceSample)}</textarea>
+    </div>
+    ${S.res.voiceLoading?`<div class="iload"><span>Analyzing your voice…</span><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`:''}
+    ${vp?`<div class="vp">
+      <div class="vp-lbl">✓ Voice Profile Captured</div>
+      ${Object.entries(vp).map(([k,v])=>`<div class="vp-row"><span class="vp-k">${esc(k)}</span><span class="vp-v">${esc(v)}</span></div>`).join('')}
+    </div>`:''}
+    ${!S.res.voiceLoading&&!vp?`<button class="btn btn-brand btn-sm" onclick="analyzeVoice()">Analyze My Voice →</button>`:''}
+    ${!S.res.voiceLoading&&vp?`<button class="btn btn-ghost" onclick="reanalyzeVoice()">↺ Re-analyze</button>`:''}
+  </div>
+
+  <div class="acts">
+    <button class="btn btn-outline" onclick="back()">← Back</button>
+    <button class="btn btn-cta" onclick="next1()">${hasRes?'Continue to Vision Intake →':'Skip & Continue →'}</button>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// STEP 2 — VISION INTAKE
+// ══════════════════════════════════════════════════════
+function rVision(){
+  const qs=getQs(S.setup.genre);
+  const filled=qs.filter(q=>(S.vision[q.id]||'').trim()).length;
+  const genre=S.setup.genre||'Your Genre';
+  return `
+  <div class="ey">Step 3 of 5</div>
+  <h2 class="sh">Vision Intake</h2>
+  <p class="ss">These questions are tailored to <strong>${genre}</strong>. Answer as many as you can — the more detail, the more authentically your book will sound like you.</p>
+
+  <div class="qbadge" id="q-badge">✦ &nbsp;${filled} of ${qs.length} questions answered</div>
+
+  ${qs.map((q,i)=>`
+  <div class="qcard">
+    <div class="qn">Question ${i+1}</div>
+    <div class="qt">${q.t}</div>
+    <textarea id="vq-${q.id}" placeholder="${q.p}" style="min-height:75px"
+      oninput="vChange('${q.id}',this)">${esc(S.vision[q.id]||'')}</textarea>
+    <div class="char-ct" id="cc-${q.id}">${(S.vision[q.id]||'').length} chars</div>
+  </div>`).join('')}
+
+  <div class="acts">
+    <button class="btn btn-outline" onclick="back()">← Back</button>
+    <button class="btn btn-cta" onclick="next2()">Generate Two Outlines →</button>
+  </div>`;
+}
+
+function vChange(id,el){
+  S.vision[id]=el.value;
+  const cc=document.getElementById('cc-'+id);if(cc)cc.textContent=el.value.length+' chars';
+  const qs=getQs(S.setup.genre);
+  const filled=qs.filter(q=>(S.vision[q.id]||'').trim()).length;
+  const b=document.getElementById('q-badge');if(b)b.innerHTML=`✦ &nbsp;${filled} of ${qs.length} questions answered`;
+}
+
+// ══════════════════════════════════════════════════════
+// STEP 3 — OUTLINE
+// ══════════════════════════════════════════════════════
+function rOutline(){
+  if(!S.outlines) return `<div class="ldstate"><p>Preparing…</p></div>`;
+  const {oA,oB}=S.outlines;
+  return `
+  <div class="ey">Step 4 of 5</div>
+  <h2 class="sh">Choose Your Outline</h2>
+  <p class="ss">Two structurally different approaches for your book. Pick the one that fits your vision, adjust it if needed, then we'll start writing.</p>
+
+  <div class="ol-grid">
+    ${rOCard('a',oA)}
+    ${rOCard('b',oB)}
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:20px;align-items:center">
+    <button class="btn btn-ghost" onclick="regenOutlines()">${S.regenLoading?'Regenerating…':'↺ Regenerate Both Outlines'}</button>
+    ${S.regenLoading?`<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`:''}
+  </div>
+
+  ${S.olPicked?`
+  <div class="sbox">✓ You've selected <strong>Option ${S.olPicked.toUpperCase()}</strong>. Ready to start writing.</div>
+  <div class="fg">
+    <label class="lb">Any adjustments before we write? <span class="opt">(optional)</span></label>
+    <textarea id="ol-fb" placeholder="e.g. 'Combine chapters 4 & 5', 'Add a chapter on X', 'Make chapter 3 more practical'…" style="min-height:65px">${esc(S.olFeedback)}</textarea>
+  </div>
+  <div class="acts">
+    <button class="btn btn-outline" onclick="back()">← Back</button>
+    <button class="btn btn-cta" onclick="startDraft()">Start Writing the Book →</button>
+  </div>
+  `:`<div class="acts">
+    <button class="btn btn-outline" onclick="back()">← Back</button>
+    <button class="btn btn-cta" disabled>Select an Outline Above</button>
+  </div>`}`;
+}
+
+function rOCard(k,ol){
+  const isSel=S.olPicked===k;
+  return `<div class="olcard${isSel?' sel':''}" onclick="pickOL('${k}')">
+    ${isSel?'<div class="sel-b">✓ Selected</div>':''}
+    <div class="ol-opt">Option ${k.toUpperCase()}</div>
+    <div class="ol-t">${esc(ol.title||'')}</div>
+    <div class="ol-a">${esc(ol.approach||'')}</div>
+    <div class="ol-chs">${(ol.chapters||[]).map(c=>`
+      <div class="ol-ch"><span class="ol-cn">${c.number}.</span><span class="ol-ct">${esc(c.title)}</span></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function pickOL(k){S.olPicked=k;render();}
+
+// ══════════════════════════════════════════════════════
+// STEP 4 — DRAFT STUDIO
+// ══════════════════════════════════════════════════════
+function rDraft(){
+  if(S.done)return rComplete();
+  const chs=S.chapters;
+  if(!chs.length)return '<p>No chapters found.</p>';
+  const idx=S.curCh,ch=chs[idx],dr=S.drafts[idx];
+  const total=chs.length;
+  const approved=Object.values(S.drafts).filter(d=>d.status==='approved').length;
+  const pct=Math.round(approved/total*100);
+
+  return `
+  <div class="ey">Step 5 of 5 — Draft Studio</div>
+  <h2 class="sh">${esc(S.setup.title||'Your Book')}</h2>
+
+  <div class="dbar">
+    <div class="dstat"><strong>${approved}</strong> / ${total} chapters approved</div>
+    <div class="dprog"><div class="dprog-fill" style="width:${pct}%"></div></div>
+    <div class="dpct">${pct}% complete</div>
+  </div>
+
+  <div class="dlayout">
+    <div class="chsb">
+      <div class="chsb-t">Chapters</div>
+      ${chs.map((c,i)=>{
+        const d=S.drafts[i],st=d?d.status:'pending';
+        let dc='chd';
+        if(st==='writing')dc+=' wrt';
+        else if(st==='done')dc+=' dn';
+        else if(st==='approved')dc+=' apv';
+        return `<div class="chi${i===idx?' act':''}" onclick="selCh(${i})">
+          <div class="${dc}"></div>
+          <div class="chl">${i+1}. ${esc(c.title)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="dmain">
+      <div class="dch-n">Chapter ${idx+1}</div>
+      <div class="dch-t">${esc(ch.title)}</div>
+      ${ch.description?`<div class="dch-d">${esc(ch.description)}</div>`:''}
+      ${rDraftBody(idx)}
+    </div>
+  </div>`;
+}
+
+function rDraftBody(idx){
+  const dr=S.drafts[idx];
+  if(!dr||dr.status==='pending') return `
+    <div class="dbox empty">Click "Write Chapter" to generate this chapter</div>
+    <div class="dacts"><button class="btn btn-cta" onclick="writeCh(${idx})">✐ Write Chapter ${idx+1}</button></div>`;
+
+  if(dr.status==='writing') return `
+    <div class="dbox wrt" id="dc-${idx}">${esc(dr.content||'')}</div>
+    <div class="dacts"><span class="badge bw">✦ Writing…</span></div>`;
+
+  if(dr.status==='approved') return `
+    <div class="dbox" id="dc-${idx}">${esc(dr.content)}</div>
+    <div class="dacts">
+      <span class="badge ba">✓ Approved</span>
+      ${idx<S.chapters.length-1?`<button class="btn btn-cta btn-sm" onclick="selCh(${idx+1})">Next Chapter →</button>`:
+      `<button class="btn btn-cta btn-sm" onclick="finishBook()">🎉 Complete Book!</button>`}
+    </div>`;
+
+  // done — awaiting review
+  return `
+    <div class="dbox" id="dc-${idx}">${esc(dr.content)}</div>
+    <div class="fg" style="margin-top:12px">
+      <label class="lb">Revision Notes <span class="opt">(optional — tell us what to change)</span></label>
+      <textarea id="rv-${idx}" placeholder="e.g. 'Make the opening more personal', 'Add a real example in section 2', 'Shorten the middle'…" style="min-height:65px">${esc(dr.feedback||'')}</textarea>
+    </div>
+    <div class="dacts">
+      <button class="btn btn-cta btn-sm" onclick="approveCh(${idx})">✓ Approve Chapter</button>
+      <button class="btn btn-outline btn-sm" onclick="reviseCh(${idx})">↺ Request Revision</button>
+      <button class="btn btn-ghost" onclick="writeCh(${idx})">⟳ Rewrite</button>
+    </div>`;
+}
+
+function rComplete(){
+  const approved=Object.values(S.drafts).filter(d=>d.status==='approved').length;
+  return `<div class="cplt">
+    <div class="cplt-ico">📖</div>
+    <h2 class="cplt-t">Book Complete!</h2>
+    <p class="cplt-s">${esc(S.setup.title||'Your book')} has been fully drafted — <strong>${approved} chapters</strong> written in your authentic voice, ready for editing and publishing.</p>
+    <div class="cplt-acts">
+      <button class="btn btn-cta" onclick="exportBook()">📥 Download Full Manuscript</button>
+      <button class="btn btn-brand" onclick="exportChapters()">📋 Download Chapter by Chapter</button>
+      <button class="btn btn-outline" onclick="startOver()">Start New Book</button>
+    </div>
+  </div>`;}
+
+// ══════════════════════════════════════════════════════
+// LOADING
+// ══════════════════════════════════════════════════════
+function rLoad(){return `<div class="ldstate">
+  <div class="ld-ico">✍️</div>
+  <div class="ld-t">${esc(S.loadMsg||'Working on it…')}</div>
+  <div class="ld-s">This may take a moment</div>
+  <div class="dots" style="margin-top:6px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+</div>`;}
+
+// ══════════════════════════════════════════════════════
+// API — IDEA CONCEPTS
+// ══════════════════════════════════════════════════════
+async function genConcepts(){
+  IDEA_QS.forEach(q=>{const el=document.getElementById('iq-'+q.id);if(el)S.ideaQs[q.id]=el.value;});
+  const filled=IDEA_QS.filter(q=>(S.ideaQs[q.id]||'').trim()).length;
+  if(filled<3)return showErr('Please answer at least 3 questions so we can generate relevant concepts.');
+  S.error=null;S.ideaLoading=true;// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+
+  const answers=IDEA_QS.map(q=>S.ideaQs[q.id]?`${q.t}\nAnswer: ${S.ideaQs[q.id]}`:'').filter(Boolean).join('\n\n');
+  const prompt=`Based on these discovery answers from a potential book author, generate exactly 3 distinct and compelling book concepts.\n\n${answers}\n\nReturn ONLY valid JSON (no markdown):\n{\n  "concepts": [\n    {"title":"Working title","premise":"2-3 sentence description of the book","genre":"Best genre","audience":"Target reader in 5-8 words"},\n    ...\n  ]\n}`;
+
+  try{
+    const res=await apiCall(prompt,1500);
+    const txt=res.replace(/```json\n?|```\n?/g,'').trim();
+    const parsed=JSON.parse(txt);
+    S.concepts=parsed.concepts;S.ideaLoading=false;// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+  }catch(e){S.ideaLoading=false;S.error='Could not generate concepts: '+e.message;render();}
+}
+
+// ══════════════════════════════════════════════════════
+// API — VOICE ANALYZER
+// ══════════════════════════════════════════════════════
+async function analyzeVoice(){
+  const el=document.getElementById('voice-sample');
+  const sample=(el?el.value:S.res.voiceSample).trim();
+  if(sample.length<50)return showErr('Please paste at least 50 words of your writing for voice analysis.');
+  S.res.voiceSample=sample;S.res.voiceLoading=true;// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+
+  const prompt=`Analyze this writing sample and extract the author's natural voice profile.\n\nSAMPLE:\n"${sample}"\n\nReturn ONLY valid JSON (no markdown):\n{"Sentence Style":"e.g. Short and punchy / Long and flowing","Tone":"e.g. Warm and conversational / Direct and authoritative","Vocabulary":"e.g. Simple everyday language / Elevated literary / Technical","Rhythm":"e.g. Staccato, fast-paced / Slow, deliberate / Balanced","Personality":"e.g. Self-deprecating humor / Passionate and urgent / Calm and reflective","Signature Phrases":"Recurring words or patterns to replicate"}`;
+
+  try{
+    const txt=await apiCall(prompt,600);
+    S.res.voiceProfile=JSON.parse(txt.replace(/```json\n?|```\n?/g,'').trim());
+    S.res.voiceLoading=false;// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+  }catch(e){S.res.voiceLoading=false;S.error='Voice analysis failed: '+e.message;render();}
+}
+
+// ══════════════════════════════════════════════════════
+// API — GENERATE OUTLINES
+// ══════════════════════════════════════════════════════
+async function genOutlines(){
+  S.loading=true;S.loadMsg='Crafting two distinct outline options…';S.step=3;render();scrollT();
+  const ctx=buildCtx();
+  const chs=S.setup.length==='short'?'8-10':S.setup.length==='extended'?'14-18':'10-14';
+  const prompt=`You are a world-class ghostwriter and book strategist.\n\n${ctx}\n\nCreate TWO structurally different book outlines with ${chs} chapters each (including Introduction and Conclusion).\n\nReturn ONLY valid JSON:\n{"oA":{"title":"Short approach name","approach":"2-3 sentences","chapters":[{"number":1,"title":"…","description":"1 sentence"}]},"oB":{"title":"Short approach name","approach":"2-3 sentences","chapters":[{"number":1,"title":"…","description":"1 sentence"}]}}`;
+  try{
+    const txt=(await apiCall(prompt,3000)).replace(/```json\n?|```\n?/g,'').trim();
+    S.outlines=JSON.parse(txt);S.loading=false;render();scrollT();
+  }catch(e){S.loading=false;S.error='Could not generate outlines: '+e.message;render();}
+}
+
+async function regenOutlines(){
+  if(S.regenLoading)return;
+  S.regenLoading=true;S.olPicked=null;// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+  const ctx=buildCtx();
+  const chs=S.setup.length==='short'?'8-10':S.setup.length==='extended'?'14-18':'10-14';
+  const prompt=`You are a world-class ghostwriter. Generate TWO completely fresh, structurally different book outlines (different from any previous versions) with ${chs} chapters each.\n\n${ctx}\n\nReturn ONLY valid JSON:\n{"oA":{"title":"…","approach":"…","chapters":[{"number":1,"title":"…","description":"…"}]},"oB":{"title":"…","approach":"…","chapters":[{"number":1,"title":"…","description":"…"}]}}`;
+  try{
+    const txt=(await apiCall(prompt,3000)).replace(/```json\n?|```\n?/g,'').trim();
+    S.outlines=JSON.parse(txt);S.regenLoading=false;// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+  }catch(e){S.regenLoading=false;S.error='Regeneration failed: '+e.message;render();}
+}
+
+// ══════════════════════════════════════════════════════
+// API — START DRAFT
+// ══════════════════════════════════════════════════════
+async function startDraft(){
+  const fb=document.getElementById('ol-fb')?.value||'';
+  S.olFeedback=fb;
+  let outline=S.outlines[S.olPicked==='a'?'oA':'oB'];
+  if(fb.trim()){
+    S.loading=true;S.loadMsg='Applying your adjustments to the outline…';// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+    try{
+      const txt=(await apiCall(`Update this book outline based on the author's adjustments.\nOutline: ${JSON.stringify(outline)}\nAdjustments: "${fb}"\nReturn only the updated JSON object with the same structure.`,2000)).replace(/```json\n?|```\n?/g,'').trim();
+      outline=JSON.parse(txt);
+    }catch(e){/* use original */}
+    S.loading=false;
+  }
+  S.chapters=outline.chapters||[];S.drafts={};S.curCh=0;S.step=4;render();scrollT();
+}
+
+// ══════════════════════════════════════════════════════
+// API — WRITE CHAPTER (streaming)
+// ══════════════════════════════════════════════════════
+async function writeCh(idx){
+  const ch=S.chapters[idx];if(!ch)return;
+  const prevFeedback=S.drafts[idx]?.feedback||'';
+  S.drafts[idx]={content:'',status:'writing',feedback:''};// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+
+  const ctx=buildCtx();
+  const allChs=S.chapters.map((c,i)=>`${i+1}. ${c.title}`).join('\n');
+  const prevApproved=Object.entries(S.drafts).filter(([i,d])=>+i<idx&&d.status==='approved').map(([i,d])=>`Ch${+i+1} "${S.chapters[+i].title}":\n${d.content.slice(0,400)}…`).join('\n\n');
+  const vp=S.res.voiceProfile?`\nAUTHOR VOICE PROFILE (match this exactly):\n${Object.entries(S.res.voiceProfile).map(([k,v])=>`${k}: ${v}`).join('\n')}\n`:'\n';
+
+  const prompt=`You are an elite ghostwriter. Write Chapter ${idx+1} of this book in the author's authentic, human voice.
+
+AUTHOR & BOOK CONTEXT:
+${ctx}${vp}
+FULL OUTLINE:
+${allChs}
+${prevApproved?`\nAPPROVED CHAPTERS (for continuity):\n${prevApproved}\n`:''}
+${prevFeedback?`\nAUTHOR REVISION NOTES:\n${prevFeedback}\n`:''}
+
+WRITE NOW: Chapter ${idx+1} — "${ch.title}"
+${ch.description?`Focus: ${ch.description}`:''}
+
+CRITICAL RULES:
+- Write ${S.setup.length==='short'?'1,500–2,200':S.setup.length==='extended'?'3,500–5,000':'2,500–3,500'} words of compelling, human prose
+- Sound like a real person — NOT an AI. No AI clichés ("It's important to note", "In conclusion", "In today's world")
+- Match the author's voice, tone, and style exactly
+- Open with a hook — a story, question, bold statement, or scene
+- Do NOT start with the chapter title, chapter number, or "In this chapter"
+- Use specific details, real examples, and the author's perspective throughout`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window.ANTHROPIC_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:5000,stream:true,messages:[{role:'user',content:prompt}]})});
+    if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error?.message||`API ${res.status}`);}
+    const reader=res.body.getReader(),decoder=new TextDecoder();
+    let text='';
+    while(true){
+      const{done,value}=await reader.read();if(done)break;
+      for(const line of decoder.decode(value).split('\n')){
+        if(!line.startsWith('data: '))continue;
+        const d=line.slice(6).trim();if(d==='[DONE]')continue;
+        try{const p=JSON.parse(d);if(p.type==='content_block_delta'&&p.delta?.type==='text_delta'){text+=p.delta.text;if(S.drafts[idx])S.drafts[idx].content=text;const el=document.getElementById('dc-'+idx);if(el)el.textContent=text;}}catch(e){}
+      }
+    }
+    if(S.drafts[idx])S.drafts[idx].status='done';// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+  }catch(e){if(S.drafts[idx])S.drafts[idx].status='pending';S.error='Failed to write chapter: '+e.message;render();}
+}
+
+// ══════════════════════════════════════════════════════
+// GENERIC API CALL
+// ══════════════════════════════════════════════════════
+async function apiCall(prompt,maxTokens=1000){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':window.ANTHROPIC_KEY,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:maxTokens,messages:[{role:'user',content:prompt}]})});
+  if(!res.ok){const e=await res.json().catch(()=>{});throw new Error(e?.error?.message||`API ${res.status}`);}
+  const data=await res.json();
+  return data.content.map(b=>b.type==='text'?b.text:'').join('');
+}
+
+// ══════════════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════════════
+function exportBook(){
+  const lines=[S.setup.title||'My Book','','by '+( S.pickedConcept!==null&&S.concepts?S.concepts[S.pickedConcept].title:'Author'),'','Generated with InkFlow — selfpublishing.com','='.repeat(60),''];
+  S.chapters.forEach((c,i)=>{const d=S.drafts[i];lines.push('',`CHAPTER ${i+1}`,c.title,'-'.repeat(40),'',d?.content||'[Not yet written]','');});
+  dl((S.setup.title||'manuscript').replace(/[^a-z0-9]/gi,'_')+'.txt',lines.join('\n'));
+}
+function exportChapters(){
+  S.chapters.forEach((c,i)=>{const d=S.drafts[i];if(d?.content){dl(`ch${i+1}_${c.title.replace(/[^a-z0-9]/gi,'_')}.txt`,[`Chapter ${i+1}: ${c.title}`,'','',d.content].join('\n'));}});
+}
+function dl(name,text){const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([text],{type:'text/plain'})),download:name});a.click();URL.revokeObjectURL(a.href);}
+
+// ══════════════════════════════════════════════════════
+// NAV HELPERS
+// ══════════════════════════════════════════════════════
+function setMode(m){S.mode=m;S.error=null;if(m==='direct'){S.concepts=null;S.pickedConcept=null;}render();}
+function pickConcept(i){
+  S.pickedConcept=i;
+  const c=S.concepts[i];
+  S.setup.genre=c.genre;S.setup.title=c.title;
+  // Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+}
+function resetConcepts(){S.concepts=null;S.pickedConcept=null;render();}
+function next0Idea(){
+  if(!S.setup.length)return showErr('Please select a target length.');
+  S.error=null;S.step=1;render();scrollT();
+}
+function next0(){
+  if(!S.setup.genre)return showErr('Please select a book genre.');
+  if(!S.setup.length)return showErr('Please select a target length.');
+  const t=document.getElementById('f-title');if(t)S.setup.title=t.value.trim();
+  const g=document.getElementById('f-goal');if(g)S.setup.goal=g.value.trim();
+  S.error=null;S.step=1;render();scrollT();
+}
+function next1(){
+  const tp=document.getElementById('text-paste');if(tp)S.res.textPaste=tp.value;
+  S.error=null;S.step=2;render();scrollT();
+}
+function next2(){
+  getQs(S.setup.genre).forEach(q=>{const el=document.getElementById('vq-'+q.id);if(el)S.vision[q.id]=el.value;});
+  if(getQs(S.setup.genre).filter(q=>(S.vision[q.id]||'').trim()).length<2) return showErr('Please answer at least 2 questions so we can build your outline.');
+  S.error=null;genOutlines();
+}
+function back(){
+  S.error=null;S.step=Math.max(0,S.step-1);
+  if(S.step<3){S.outlines=null;S.olPicked=null;}render();scrollT();
+}
+function selCh(i){S.curCh=i;render();}
+function approveCh(i){if(S.drafts[i])S.drafts[i].status='approved';render();}
+function reviseCh(i){const el=document.getElementById('rv-'+i);if(S.drafts[i]&&el)S.drafts[i].feedback=el.value.trim();writeCh(i);}
+function finishBook(){S.done=true;render();}
+function reanalyzeVoice(){S.res.voiceProfile=null;render();}
+
+function startOver(){
+  if(!confirm('Start a new book? All progress will be cleared.'))return;
+  S={mode:'direct',ideaQs:{expert:'',problem:'',story:'',reader:'',legacy:''},ideaLoading:false,concepts:null,pickedConcept:null,step:0,loading:false,loadMsg:'',error:null,setup:{genre:'',title:'',length:'',goal:''},res:{links:[],files:[],textPaste:'',voiceSample:'',voiceProfile:null,voiceLoading:false},vision:{},outlines:null,olPicked:null,olFeedback:'',regenLoading:false,chapters:[],curCh:0,drafts:{},done:false};
+  render();scrollT();
+}
+
+// ══════════════════════════════════════════════════════
+// BUILD CONTEXT
+// ══════════════════════════════════════════════════════
+function buildCtx(){
+  let c='';
+  c+=`Genre: ${S.setup.genre}\n`;
+  if(S.setup.title)c+=`Working Title: ${S.setup.title}\n`;
+  c+=`Target Length: ${S.setup.length==='short'?'20,000–30,000 words':S.setup.length==='extended'?'80,000–90,000 words':'50,000–60,000 words'}\n`;
+  if(S.setup.goal)c+=`Primary Goal: ${S.setup.goal}\n`;
+  c+='\n';
+  if(S.pickedConcept!==null&&S.concepts){const cv=S.concepts[S.pickedConcept];c+=`Book Concept: ${cv.title}\nPremise: ${cv.premise}\nTarget Audience: ${cv.audience}\n\n`;}
+  if(S.mode==='idea'&&S.ideaQs.expert){IDEA_QS.forEach(q=>{if(S.ideaQs[q.id])c+=`${q.t}\n${S.ideaQs[q.id]}\n\n`;});}
+  getQs(S.setup.genre).forEach(q=>{if((S.vision[q.id]||'').trim())c+=`${q.t}\n${S.vision[q.id]}\n\n`;});
+  if(S.res.links.length){c+='Content Links:\n';S.res.links.forEach(l=>c+=`- [${l.type}] ${l.url}\n`);c+='\n';}
+  if(S.res.textPaste.trim())c+=`Text Materials (transcripts/posts):\n${S.res.textPaste.slice(0,1500)}\n\n`;
+  if(S.res.files.length){c+='Uploaded Files:\n';S.res.files.forEach(f=>{c+=`- ${f.name}`;if(f.content)c+=`\n  Sample: ${f.content.slice(0,300)}…`;c+='\n';});c+='\n';}
+  return c;
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+function showErr(m){S.error=m;render();}
+function scrollT(){document.getElementById('main').scrollTop=0;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');}
+function fmtSz(b){if(!b)return'';if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB';}
+
+function addLink(){const url=document.getElementById('lurl')?.value.trim();if(!url)return;S.res.links.push({type:document.getElementById('ltype')?.value||'other',url});render();}
+function rmLink(i){S.res.links.splice(i,1);render();}
+function rmFile(i){S.res.files.splice(i,1);render();}
+
+// ══════════════════════════════════════════════════════
+// EVENTS
+// ══════════════════════════════════════════════════════
+function bind(){
+  document.querySelectorAll('.gbtn[data-g]').forEach(b=>{b.onclick=()=>{S.setup.genre=b.dataset.g;document.querySelectorAll('.gbtn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};});
+  document.querySelectorAll('.lbtn[data-l]').forEach(b=>{b.onclick=()=>{S.setup.length=b.dataset.l;document.querySelectorAll('.lbtn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};});
+
+  const fup=document.getElementById('fup');
+  if(fup)fup.onchange=e=>{Array.from(e.target.files).forEach(f=>{if(f.type==='text/plain'){const r=new FileReader();r.onload=ev=>{S.res.files.push({name:f.name,size:f.size,content:ev.target.result.slice(0,2000)});render();};r.readAsText(f);}else{S.res.files.push({name:f.name,size:f.size,content:''});render();}});fup.value='';};
+
+  const dz=document.getElementById('dz');
+  if(dz){dz.ondragover=e=>{e.preventDefault();dz.classList.add('drag');};dz.ondragleave=()=>dz.classList.remove('drag');dz.ondrop=e=>{e.preventDefault();dz.classList.remove('drag');Array.from(e.dataTransfer.files).forEach(f=>{S.res.files.push({name:f.name,size:f.size,content:''});});render();};}
+
+  const lu=document.getElementById('lurl');if(lu)lu.onkeydown=e=>{if(e.key==='Enter')addLink();};
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+// Get API key from user on first load
+window.ANTHROPIC_KEY = '';
+function initApp(){
+  const key = localStorage.getItem('inkflow_key');
+  if(key){ window.ANTHROPIC_KEY = key; render(); }
+  else { showKeyPrompt(); }
+}
+function showKeyPrompt(){
+  document.getElementById('view').innerHTML = `
+  <div style="max-width:460px;margin:80px auto;text-align:center">
+    <div style="font-size:40px;margin-bottom:20px">🔑</div>
+    <h2 style="font-family:'Playfair Display',serif;font-size:26px;margin-bottom:10px">Enter Your API Key</h2>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:24px;line-height:1.6">Your key is stored only in your browser and never sent anywhere except directly to Anthropic.</p>
+    <input type="password" id="key-input" placeholder="sk-ant-..." style="margin-bottom:12px;text-align:center">
+    <br>
+    <button class="btn btn-cta" onclick="saveKey()">Start Writing →</button>
+    <p style="font-size:11px;color:var(--text-dim);margin-top:16px">Get your key at <a href='https://console.anthropic.com' target='_blank' style='color:var(--brand)'>console.anthropic.com</a></p>
+  </div>`;
+}
+function saveKey(){
+  const k = document.getElementById('key-input').value.trim();
+  if(!k.startsWith('sk-ant')) return alert('Please enter a valid Anthropic API key (starts with sk-ant)');
+  window.ANTHROPIC_KEY = k;
+  localStorage.setItem('inkflow_key', k);
+  render();
+}
+initApp();
+</script>
+</body>
+</html>
